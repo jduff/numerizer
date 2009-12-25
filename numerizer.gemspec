@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{numerizer}
-  s.version = "0.0.0"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["John Duff"]
-  s.date = %q{2009-12-20}
+  s.date = %q{2009-12-25}
   s.description = %q{Numerizer is a gem to help with parsing numbers in natural language from strings (ex forty two). It was extracted from the awesome Chronic gem http://github.com/evaryont/chronic.}
   s.email = %q{duff.john@gmail.com}
   s.extra_rdoc_files = [
@@ -24,7 +24,9 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "lib/numerizer.rb",
-     "test/test_helper.rb"
+     "numerizer.gemspec",
+     "test/test_helper.rb",
+     "test/test_numerizer.rb"
   ]
   s.homepage = %q{http://github.com/jduff/numerizer}
   s.rdoc_options = ["--charset=UTF-8"]
