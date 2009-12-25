@@ -11,4 +11,14 @@ Numerizer is a gem to help with parsing numbers in natural language from strings
 
     >> require 'numerizer'
     => true
-    >> Numerizer.numerize('4 minutes and 30 seconds')
+    >> Numerizer.numerize('forty two')
+    => "42"
+    >> Numerizer.numerize('two and a half')
+    => "2.5"
+    >> Numerizer.numerize('three quarters')
+    => "3/4"
+    >> Numerizer.numerize('two and three eighths')
+    => "2.375"
+
+== Contributors
+Tom Preston-Werner, John Duff
