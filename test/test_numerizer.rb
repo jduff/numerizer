@@ -1,4 +1,4 @@
-require 'test_helper'
+require File.join(File.dirname(__FILE__), 'test_helper')
 
 class NumerizerTest < Test::Unit::TestCase
 	def test_straight_parsing
@@ -31,7 +31,7 @@ class NumerizerTest < Test::Unit::TestCase
 			1_200 => 'twelve hundred',
 			1_200 => 'one thousand two hundred',
 			17_000 => 'seventeen thousand',
-			21_473 => 'twentyone-thousand-four-hundred-and-seventy-three',
+      21_473 => 'twentyone-thousand-four-hundred-and-seventy-three',
 			74_002 => 'seventy four thousand and two',
 			99_999 => 'ninety nine thousand nine hundred ninety nine',
 			100_000 => '100 thousand',
@@ -48,6 +48,11 @@ class NumerizerTest < Test::Unit::TestCase
 		assert_equal "2.5", Numerizer.numerize("two and a half")
 		assert_equal "1/2", Numerizer.numerize("one half")
 	end
+	
+	def test_combined_double_digets
+	  assert_equal "21", Numerizer.numerize("twentyone")
+	  assert_equal "37", Numerizer.numerize("thirtyseven")
+  end
   
   def test_fractions_in_words
     assert_equal "1/4", Numerizer.numerize("1 quarter")
@@ -64,6 +69,10 @@ class NumerizerTest < Test::Unit::TestCase
     assert_equal "1.25", Numerizer.numerize("one and a quarter")
     assert_equal "2.375", Numerizer.numerize("two and three eighths")
     assert_equal "3.5 hours", Numerizer.numerize("three and a half hours")
+  end
+  
+  def test_word_with_a_number
+    assert_equal "pennyweight", Numerizer.numerize("pennyweight")
   end
 
 	def test_edges

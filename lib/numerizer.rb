@@ -26,17 +26,21 @@ class Numerizer
 		['nineteen', '19'],
 		['ninteen', '19'], # Common mis-spelling
 		['zero', '0'],
-		['one', '1'],
-		['two', '2'],
-		['three', '3'],
-		['four(\W|$)', '4\1'],  # The weird regex is so that it matches four but not fourty
-		['five', '5'],
-		['six(\W|$)', '6\1'],
-		['seven(\W|$)', '7\1'],
-		['eight(\W|$)', '8\1'],
-		['nine(\W|$)', '9\1'],
 		['ten', '10'],
 		['\ba[\b^$]', '1'] # doesn't make sense for an 'a' at the end to be a 1
+	]
+	
+	SINGLE_NUMS = [
+	  ['one', 1],
+  	['two', 2],
+  	['three', 3],
+  	#['four(\W|$)', '4\1'],  # The weird regex is so that it matches four but not fourty
+  	['four', 4],
+  	['five', 5],
+  	['six', 6],
+  	['seven', 7],
+  	['eight', 8],
+  	['nine', 9]
 	]
 
 	TEN_PREFIXES = [ ['twenty', 20],
@@ -76,16 +80,22 @@ class Numerizer
 
 		# easy/direct replacements
 
-		DIRECT_NUMS.each do |dn|
-			string.gsub!(/#{dn[0]}/i, '<num>' + dn[1])
+		(DIRECT_NUMS + SINGLE_NUMS).each do |dn|
+      # string.gsub!(/#{dn[0]}/i, '<num>' + dn[1])
+      string.gsub!(/(^|\W+)#{dn[0]}($|\W+)/i) {"#{$1}<num>" + dn[1].to_s + $2}
 		end
 
 		# ten, twenty, etc.
+    # TEN_PREFIXES.each do |tp|
+    #   string.gsub!(/(?:#{tp[0]}) *<num>(\d(?=[^\d]|$))*/i) {'<num>' + (tp[1] + $1.to_i).to_s}
+    # end
 		TEN_PREFIXES.each do |tp|
-			string.gsub!(/(?:#{tp[0]}) *<num>(\d(?=[^\d]|$))*/i) {'<num>' + (tp[1] + $1.to_i).to_s}
-		end
-		TEN_PREFIXES.each do |tp|
-			string.gsub!(/#{tp[0]}/i) { '<num>' + tp[1].to_s }
+		  SINGLE_NUMS.each do |dn|
+		    string.gsub!(/(^|\W+)#{tp[0]}#{dn[0]}($|\W+)/i) { 
+		      "#{$1}<num>" + (tp[1] + dn[1]).to_s + $2
+		    }
+	    end
+			string.gsub!(/(^|\W+)#{tp[0]}($|\W+)/i) { "#{$1}<num>" + tp[1].to_s + $2 }
 		end
 		
 	  # handle fractions
