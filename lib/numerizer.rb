@@ -1,13 +1,13 @@
 # LICENSE:
-# 
+#
 # (The MIT License)
-# 
+#
 # Copyright © 2008 Tom Preston-Werner
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require 'strscan'
@@ -29,7 +29,7 @@ class Numerizer
 		['ten', '10'],
 		['\ba[\b^$]', '1'] # doesn't make sense for an 'a' at the end to be a 1
 	]
-	
+
 	SINGLE_NUMS = [
 	  ['one', 1],
   	['two', 2],
@@ -60,7 +60,7 @@ class Numerizer
 		['billion', 1_000_000_000],
 		['trillion', 1_000_000_000_000],
 	]
-	
+
 	FRACTIONS = [ ['half', 2],
 	  ['third(s)?', 3],
 	  ['fourth(s)?', 4],
@@ -71,6 +71,18 @@ class Numerizer
 	  ['eighth(s)?', 8],
 	  ['nineth(s)?', 9],
 	]
+
+  ORDINALS = [
+    ['first', '1'],
+    ['third', '3'],
+    ['fourth', '4'],
+    ['fifth', '5'],
+    ['sixth', '6'],
+    ['seventh', '7'],
+    ['eighth', '8'],
+    ['ninth', '9'],
+    ['tenth', '10']
+  ]
 
 	def self.numerize(string)
 		string = string.dup
@@ -91,22 +103,26 @@ class Numerizer
     # end
 		TEN_PREFIXES.each do |tp|
 		  SINGLE_NUMS.each do |dn|
-		    string.gsub!(/(^|\W+)#{tp[0]}#{dn[0]}($|\W+)/i) { 
+		    string.gsub!(/(^|\W+)#{tp[0]}#{dn[0]}($|\W+)/i) {
 		      "#{$1}<num>" + (tp[1] + dn[1]).to_s + $2
 		    }
 	    end
 			string.gsub!(/(^|\W+)#{tp[0]}($|\W+)/i) { "#{$1}<num>" + tp[1].to_s + $2 }
 		end
-		
+
 	  # handle fractions
 		FRACTIONS.each do |tp|
 		  string.gsub!(/a #{tp[0]}/i) { '<num>1/' + tp[1].to_s }
 			string.gsub!(/\s#{tp[0]}/i) { '/' + tp[1].to_s }
 		end
-		
+
+    ORDINALS.each do |on|
+      string.gsub!(/#{on[0]}/i, '<num>' + on[1] + on[0][-2, 2])
+    end
+
 		# evaluate fractions when preceded by another number
     string.gsub!(/(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)/i) { ($1.to_f + ($3.to_f/$4.to_f)).to_s }
-    
+
 		# hundreds, thousands, millions, etc.
 		BIG_PREFIXES.each do |bp|
 			string.gsub!(/(?:<num>)?(\d*) *#{bp[0]}/i) { '<num>' + (bp[1] * $1.to_i).to_s}

@@ -18,10 +18,9 @@ rescue LoadError
 end
 
 require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'test'
+  t.test_files = Dir['test/test_*.rb']
 end
 
 begin
@@ -37,20 +36,20 @@ rescue LoadError
   end
 end
 
-task :test => :check_dependencies
+# task :test => :check_dependencies
 
 task :default => :test
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  if File.exist?('VERSION')
-    version = File.read('VERSION')
-  else
-    version = ""
-  end
+# require 'rake/rdoctask'
+# Rake::RDocTask.new do |rdoc|
+#   if File.exist?('VERSION')
+#     version = File.read('VERSION')
+#   else
+#     version = ""
+#   end
 
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "numerizer #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
+#   rdoc.rdoc_dir = 'rdoc'
+#   rdoc.title = "numerizer #{version}"
+#   rdoc.rdoc_files.include('README*')
+#   rdoc.rdoc_files.include('lib/**/*.rb')
+# end
