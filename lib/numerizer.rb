@@ -34,7 +34,6 @@ class Numerizer
     ['one', 1],
     ['two', 2],
     ['three', 3],
-    #['four(\W|$)', '4\1'],  # The weird regex is so that it matches four but not fourty
     ['four', 4],
     ['five', 5],
     ['six', 6],
@@ -75,16 +74,36 @@ class Numerizer
     ['nineth(s)?', 9],
   ]
 
-  ORDINALS = [
-    ['first', '1'],
-    ['third', '3'],
-    ['fourth', '4'],
-    ['fifth', '5'],
-    ['sixth', '6'],
-    ['seventh', '7'],
-    ['eighth', '8'],
-    ['ninth', '9'],
-    ['tenth', '10']
+  SINGLE_ORDINALS = [
+    ['first', 1],
+    ['third', 3],
+    ['fourth', 4],
+    ['fifth', 5],
+    ['sixth', 6],
+    ['seventh', 7],
+    ['eighth', 8],
+    ['ninth', 9]
+  ]
+
+  DIRECT_ORDINALS = [
+    ['tenth', '10'],
+    ['eleventh', '11'],
+    ['twelfth', '12'],
+    ['thirteenth', '13'],
+    ['fourteenth', '14'],
+    ['fifteenth', '15'],
+    ['sixteenth', '16'],
+    ['seventeenth', '17'],
+    ['eighteenth', '18'],
+    ['nineteenth', '19'],
+    ['twentieth', '20'],
+    ['thirtieth', '30'],
+    ['fourtieth', '40'],
+    ['fiftieth', '50'],
+    ['sixtieth', '60'],
+    ['seventieth', '70'],
+    ['eightieth', '80'],
+    ['ninetieth', '90']
   ]
 
   def self.numerize(string)
@@ -94,33 +113,29 @@ class Numerizer
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
 
     # easy/direct replacements
-
     (DIRECT_NUMS + SINGLE_NUMS).each do |dn|
-      # string.gsub!(/#{dn[0]}/i, '<num>' + dn[1])
-      string.gsub!(/(^|\W+)#{dn[0]}($|\W+)/i) { "#{$1}<num>" + dn[1].to_s + $2 }
+      string.gsub!(/(^|\W)#{dn[0]}(?=$|\W)/i, '\1<num>' + dn[1].to_s)
     end
 
     # ten, twenty, etc.
-    # TEN_PREFIXES.each do |tp|
-    #   string.gsub!(/(?:#{tp[0]}) *<num>(\d(?=[^\d]|$))*/i) {'<num>' + (tp[1] + $1.to_i).to_s}
-    # end
     TEN_PREFIXES.each do |tp|
       SINGLE_NUMS.each do |dn|
-        string.gsub!(/(^|\W+)#{tp[0]}#{dn[0]}($|\W+)/i) {
-          "#{$1}<num>" + (tp[1] + dn[1]).to_s + $2
-        }
+        string.gsub!(/(^|\W)#{tp[0]}#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s)
       end
-      string.gsub!(/(^|\W+)#{tp[0]}($|\W+)/i) { "#{$1}<num>" + tp[1].to_s + $2 }
+      SINGLE_ORDINALS.each do |dn|
+        string.gsub!(/(^|\W)#{tp[0]}(\s)?#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s + dn[0][-2, 2])
+      end
+      string.gsub!(/(^|\W)#{tp[0]}(?=$|\W)/i, '\1<num>' + tp[1].to_s)
     end
 
     # handle fractions
     FRACTIONS.each do |tp|
-      string.gsub!(/a #{tp[0]}/i) { '<num>1/' + tp[1].to_s }
-      string.gsub!(/\s#{tp[0]}/i) { '/' + tp[1].to_s }
+      string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
+      string.gsub!(/\s#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
     end
 
-    ORDINALS.each do |on|
-      string.gsub!(/#{on[0]}/i, '<num>' + on[1] + on[0][-2, 2])
+    (DIRECT_ORDINALS + SINGLE_ORDINALS).each do |on|
+      string.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
     end
 
     # evaluate fractions when preceded by another number
@@ -128,7 +143,7 @@ class Numerizer
 
     # hundreds, thousands, millions, etc.
     BIG_PREFIXES.each do |bp|
-      string.gsub!(/(?:<num>)?(\d*) *#{bp[0]}/i) { '<num>' + (bp[1] * $1.to_i).to_s }
+      string.gsub!(/(?:<num>)?(\d*) *#{bp[0]}/i) { $1.empty? ? bp[1] : '<num>' + (bp[1] * $1.to_i).to_s }
       andition(string)
     end
 
