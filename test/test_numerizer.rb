@@ -1,57 +1,60 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
 class NumerizerTest < Test::Unit::TestCase
-	def test_straight_parsing
-		strings = { 1 => 'one',
-			5 => 'five',
-			10 => 'ten',
-			11 => 'eleven',
-			12 => 'twelve',
-			13 => 'thirteen',
-			14 => 'fourteen',
-			15 => 'fifteen',
-			16 => 'sixteen',
-			17 => 'seventeen',
-			18 => 'eighteen',
-			19 => 'nineteen',
-			20 => 'twenty',
-			27 => 'twenty seven',
-			31 => 'thirty-one',
-			41 => 'forty one',
-			42 => 'fourty two',
-			59 => 'fifty nine',
-			100 => 'a hundred',
-			100 => 'one hundred',
-			150 => 'one hundred and fifty',
-			# 150 => 'one fifty',
-			200 => 'two-hundred',
-			500 => '5 hundred',
-			999 => 'nine hundred and ninety nine',
-			1_000 => 'one thousand',
-			1_200 => 'twelve hundred',
-			1_200 => 'one thousand two hundred',
-			17_000 => 'seventeen thousand',
+  def test_straight_parsing
+    strings = {
+      1 => 'one',
+      5 => 'five',
+      10 => 'ten',
+      11 => 'eleven',
+      12 => 'twelve',
+      13 => 'thirteen',
+      14 => 'fourteen',
+      15 => 'fifteen',
+      16 => 'sixteen',
+      17 => 'seventeen',
+      18 => 'eighteen',
+      19 => 'nineteen',
+      20 => 'twenty',
+      27 => 'twenty seven',
+      31 => 'thirty-one',
+      37 => 'thirty-seven',
+      41 => 'forty one',
+      42 => 'fourty two',
+      59 => 'fifty nine',
+      100 => 'a hundred',
+      100 => 'one hundred',
+      150 => 'one hundred and fifty',
+      # 150 => 'one fifty',
+      200 => 'two-hundred',
+      500 => '5 hundred',
+      999 => 'nine hundred and ninety nine',
+      1_000 => 'one thousand',
+      1_200 => 'twelve hundred',
+      1_200 => 'one thousand two hundred',
+      17_000 => 'seventeen thousand',
       21_473 => 'twentyone-thousand-four-hundred-and-seventy-three',
-			74_002 => 'seventy four thousand and two',
-			99_999 => 'ninety nine thousand nine hundred ninety nine',
-			100_000 => '100 thousand',
-			250_000 => 'two hundred fifty thousand',
-			1_000_000 => 'one million',
-			1_250_007 => 'one million two hundred fifty thousand and seven',
-			1_000_000_000 => 'one billion',
-			1_000_000_001 => 'one billion and one' }
+      74_002 => 'seventy four thousand and two',
+      99_999 => 'ninety nine thousand nine hundred ninety nine',
+      100_000 => '100 thousand',
+      250_000 => 'two hundred fifty thousand',
+      1_000_000 => 'one million',
+      1_250_007 => 'one million two hundred fifty thousand and seven',
+      1_000_000_000 => 'one billion',
+      1_000_000_001 => 'one billion and one'
+    }
 
-		strings.keys.sort.each do |key|
-			assert_equal key, Numerizer.numerize(strings[key]).to_i
-		end
+    strings.keys.sort.each do |key|
+      assert_equal key, Numerizer.numerize(strings[key]).to_i
+    end
 
-		assert_equal "2.5", Numerizer.numerize("two and a half")
-		assert_equal "1/2", Numerizer.numerize("one half")
-	end
+    assert_equal "2.5", Numerizer.numerize("two and a half")
+    assert_equal "1/2", Numerizer.numerize("one half")
+  end
 
-	def test_combined_double_digets
-	  assert_equal "21", Numerizer.numerize("twentyone")
-	  assert_equal "37", Numerizer.numerize("thirtyseven")
+  def test_combined_double_digets
+    assert_equal "21", Numerizer.numerize("twentyone")
+    assert_equal "37", Numerizer.numerize("thirtyseven")
   end
 
   def test_fractions_in_words
@@ -75,12 +78,12 @@ class NumerizerTest < Test::Unit::TestCase
     assert_equal "pennyweight", Numerizer.numerize("pennyweight")
   end
 
-	def test_edges
-		assert_equal "27 Oct 2006 7:30am", Numerizer.numerize("27 Oct 2006 7:30am")
-	end
+  def test_edges
+    assert_equal "27 Oct 2006 7:30am", Numerizer.numerize("27 Oct 2006 7:30am")
+  end
 
-	def test_multiple_slashes_should_not_be_evaluated
-	  assert_equal '11/02/2007', Numerizer.numerize('11/02/2007')
+  def test_multiple_slashes_should_not_be_evaluated
+    assert_equal '11/02/2007', Numerizer.numerize('11/02/2007')
   end
 
   def test_compatability
@@ -93,8 +96,31 @@ class NumerizerTest < Test::Unit::TestCase
     {
       'first' => '1st',
       'second' => 'second',
+      'third' => '3rd',
       'fifth' => '5th',
-      # 'twenty third' => '23rd',
+      'seventh' => '7th',
+      'eighth' => '8th',
+      'tenth' => '10th',
+      'eleventh' => '11th',
+      'twelfth' => '12th',
+      'thirteenth' => '13th',
+      'sixteenth' => '16th',
+      'twentieth' => '20th',
+      'twenty-third' => '23rd',
+      'thirtieth' => '30th',
+      'thirty-first' => '31st',
+      'fourtieth' => '40th',
+      'fourty ninth' => '49th',
+      'fiftieth' => '50th',
+      'sixtieth' => '60th',
+      'seventieth' => '70th',
+      'eightieth' => '80th',
+      'ninetieth' => '90th',
+      'hundredth' => '100th',
+      'thousandth' => '1000th',
+      'millionth' => '1000000th',
+      'billionth' => '1000000000th',
+      'trillionth' => '1000000000000th',
       'first day month two' => '1st day month 2'
     }.each do |key, val|
       assert_equal val, Numerizer.numerize(key)
