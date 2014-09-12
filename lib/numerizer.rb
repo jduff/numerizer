@@ -131,7 +131,7 @@ class Numerizer
     # handle fractions
     FRACTIONS.each do |tp|
       string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
-      string.gsub!(/\s#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
+      string.gsub!(/(?<=\d)\s+#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
     end
 
     (DIRECT_ORDINALS + SINGLE_ORDINALS).each do |on|

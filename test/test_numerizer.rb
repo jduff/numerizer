@@ -68,6 +68,11 @@ class NumerizerTest < Test::Unit::TestCase
     assert_equal "3/8", Numerizer.numerize("three eighths")
   end
 
+  def test_fraction_false_positives
+    assert_equal "this quarter", Numerizer.numerize("this quarter")
+    assert_equal "next half", Numerizer.numerize("next half")
+  end
+
   def test_fractional_addition
     assert_equal "1.25", Numerizer.numerize("one and a quarter")
     assert_equal "2.375", Numerizer.numerize("two and three eighths")
