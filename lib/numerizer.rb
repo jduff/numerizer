@@ -113,7 +113,7 @@ class Numerizer
 
     # preprocess
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
-    string.gsub!(/\ba+$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
+    string.gsub!(/\ba$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
 
     # easy/direct replacements
     (DIRECT_NUMS + SINGLE_NUMS).each do |dn|
