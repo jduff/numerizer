@@ -22,7 +22,6 @@ class NumerizerTest < TestCase
       41 => 'forty one',
       42 => 'fourty two',
       59 => 'fifty nine',
-      100 => 'a hundred',
       100 => 'one hundred',
       150 => 'one hundred and fifty',
       # 150 => 'one fifty',
@@ -50,6 +49,8 @@ class NumerizerTest < TestCase
 
     assert_equal "2.5", Numerizer.numerize("two and a half")
     assert_equal "1/2", Numerizer.numerize("one half")
+    assert_equal "100", Numerizer.numerize("a hundred")
+    assert_equal "100", Numerizer.numerize("hundred a")
   end
 
   def test_combined_double_digets
