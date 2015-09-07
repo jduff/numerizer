@@ -27,7 +27,7 @@ class Numerizer
     ['ninteen', '19'], # Common mis-spelling
     ['zero', '0'],
     ['ten', '10'],
-    ['\ba[\b^$]', '1'] # doesn't make sense for an 'a' at the end to be a 1
+    ['\ba\b', '1']
   ]
 
   SINGLE_NUMS = [
@@ -111,6 +111,7 @@ class Numerizer
 
     # preprocess
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
+    string.gsub!(/\ba+$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
 
     # easy/direct replacements
     (DIRECT_NUMS + SINGLE_NUMS).each do |dn|
