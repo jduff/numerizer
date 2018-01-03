@@ -1,6 +1,13 @@
 require 'rubygems'
 require 'rake'
 
+$:.unshift File.expand_path('../lib', __FILE__)
+require 'numerizer/version'
+
+def version
+  Numerizer::VERSION
+end
+
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |t|
   t.libs << 'test'
@@ -20,20 +27,25 @@ rescue LoadError
   end
 end
 
-# task :test => :check_dependencies
+desc "Release Numerizer version #{version}"
+task :release => :build do
+  unless `git branch` =~ /^\* master$/
+    puts "You must be on the master branch to release!"
+    exit!
+  end
+  sh "git commit --allow-empty -a -m 'Release #{version}'"
+  sh "git tag v#{version}"
+  sh "git push origin master"
+  sh "git push origin v#{version}"
+  sh "gem push pkg/numerizer-#{version}.gem"
+end
+
+desc 'Build a gem from the gemspec'
+task :build do
+  FileUtils.mkdir_p 'pkg'
+  sh 'gem build numerizer.gemspec'
+  FileUtils.mv("./numerizer-#{version}.gem", "pkg")
+end
+
 
 task :default => :test
-
-# require 'rake/rdoctask'
-# Rake::RDocTask.new do |rdoc|
-#   if File.exist?('VERSION')
-#     version = File.read('VERSION')
-#   else
-#     version = ""
-#   end
-
-#   rdoc.rdoc_dir = 'rdoc'
-#   rdoc.title = "numerizer #{version}"
-#   rdoc.rdoc_files.include('README*')
-#   rdoc.rdoc_files.include('lib/**/*.rb')
-# end
