@@ -1,6 +1,6 @@
 = Numerizer
 
-Numerizer is a gem to help with parsing numbers in natural language from strings (ex forty two). It was extracted from the awesome Chronic gem http://github.com/evaryont/chronic.
+Numerizer is a gem to help with parsing numbers in natural language from strings (ex forty two). It was extracted from the awesome Chronic gem https://github.com/mojombo/chronic.
 
 == Installation
 
