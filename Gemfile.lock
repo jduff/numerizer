@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    numerizer (0.2.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.11.1)
+    rake (10.5.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest (~> 5.0)
+  numerizer!
+  rake (~> 10)
+
+BUNDLED WITH
+   1.15.0
