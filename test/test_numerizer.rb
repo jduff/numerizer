@@ -22,14 +22,14 @@ class NumerizerTest < TestCase
       41 => 'forty one',
       42 => 'fourty two',
       59 => 'fifty nine',
-      100 => 'one hundred',
+      100 => ['one hundred', 'a hundred', 'hundred a'],
       150 => 'one hundred and fifty',
       # 150 => 'one fifty',
       200 => 'two-hundred',
       500 => '5 hundred',
       999 => 'nine hundred and ninety nine',
       1_000 => 'one thousand',
-      1_200 => 'twelve hundred',
+      1_200 => ['twelve hundred', 'one thousand two hundred'],
       17_000 => 'seventeen thousand',
       21_473 => 'twentyone-thousand-four-hundred-and-seventy-three',
       74_002 => 'seventy four thousand and two',
@@ -42,15 +42,14 @@ class NumerizerTest < TestCase
       1_000_000_001 => 'one billion and one'
     }
 
-    strings.keys.sort.each do |key|
-      assert_equal key, Numerizer.numerize(strings[key]).to_i
+    strings.sort.each do |key, value|
+      Array(value).each do |value|
+        assert_equal key, Numerizer.numerize(value).to_i
+      end
     end
 
     assert_equal "2.5", Numerizer.numerize("two and a half")
     assert_equal "1/2", Numerizer.numerize("one half")
-    assert_equal "100", Numerizer.numerize("a hundred")
-    assert_equal "100", Numerizer.numerize("hundred a")
-    assert_equal "1200", Numerizer.numerize('one thousand two hundred')
   end
 
   def test_combined_double_digets
