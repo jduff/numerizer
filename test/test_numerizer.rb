@@ -1,6 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-class NumerizerTest < Test::Unit::TestCase
+class NumerizerTest < TestCase
   def test_straight_parsing
     strings = {
       1 => 'one',
