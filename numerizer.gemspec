@@ -18,17 +18,8 @@ Gem::Specification.new do |s|
     "LICENSE",
     "README.rdoc"
   ]
-  s.files = [
-    ".document",
-    "LICENSE",
-    "README.rdoc",
-    "Rakefile",
-    "VERSION",
-    "lib/numerizer.rb",
-    "numerizer.gemspec",
-    "test/test_helper.rb",
-    "test/test_numerizer.rb"
-  ]
+  s.files = `git ls-files`.split($/)
+  s.test_files = `git ls-files -- test`.split($/)
   s.homepage = "http://github.com/jduff/numerizer"
   s.licenses = ["MIT"]
   s.rubygems_version = "2.2.2"
