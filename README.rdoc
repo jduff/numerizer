@@ -4,8 +4,7 @@ Numerizer is a gem to help with parsing numbers in natural language from strings
 
 == Installation
 
-    $ sudo gem sources -a http://gemcutter.org
-    $ sudo gem install numerizer
+    $ gem install numerizer
 
 == Usage
 
