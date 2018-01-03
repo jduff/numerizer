@@ -12,6 +12,8 @@
 
 require 'strscan'
 
+require 'numerizer/version'
+
 class Numerizer
 
   DIRECT_NUMS = [
