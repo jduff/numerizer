@@ -48,8 +48,8 @@ class NumerizerTest < TestCase
       end
     end
 
-    assert_equal "2.5", Numerizer.numerize("two and a half")
-    assert_equal "1/2", Numerizer.numerize("one half")
+    assert_equal "1/2", Numerizer.numerize("half")
+    assert_equal "1/4", Numerizer.numerize("quarter")
   end
 
   def test_combined_double_digets
@@ -58,6 +58,8 @@ class NumerizerTest < TestCase
   end
 
   def test_fractions_in_words
+    assert_equal "1/2", Numerizer.numerize("one half")
+
     assert_equal "1/4", Numerizer.numerize("1 quarter")
     assert_equal "1/4", Numerizer.numerize("one quarter")
     assert_equal "1/4", Numerizer.numerize("a quarter")
@@ -66,11 +68,13 @@ class NumerizerTest < TestCase
     assert_equal "3/4", Numerizer.numerize("three quarters")
     assert_equal "2/4", Numerizer.numerize("two fourths")
     assert_equal "3/8", Numerizer.numerize("three eighths")
+    assert_equal "7/10", Numerizer.numerize("seven tenths")
   end
 
   def test_fractional_addition
     assert_equal "1.25", Numerizer.numerize("one and a quarter")
     assert_equal "2.375", Numerizer.numerize("two and three eighths")
+    assert_equal "2.5", Numerizer.numerize("two and a half")
     assert_equal "3.5 hours", Numerizer.numerize("three and a half hours")
   end
 
@@ -95,7 +99,7 @@ class NumerizerTest < TestCase
   def test_ordinal_strings
     {
       'first' => '1st',
-      'second' => 'second',
+      'second' => '2nd',
       'third' => '3rd',
       'fifth' => '5th',
       'seventh' => '7th',
@@ -127,4 +131,43 @@ class NumerizerTest < TestCase
     end
   end
 
-end
+  def test_ambiguous_cases
+    # Quarter ( Coin ) is Untested
+    # Second ( Time / Verb ) is Untested
+    {
+      #'a second' => '1 second',
+      'the fourth' => 'the 4th',
+      'a third of' => '1/3 of',
+      'fourth' => '4th',
+      'second' => '2nd',
+      'I quarter' => 'I quarter',
+      'You quarter' => 'You quarter',
+      'I want to quarter' => 'I want to quarter',
+      'I peel and quarter bananas' => 'I peel and quarter bananas',
+      'the first quarter' => 'the first 1/4',
+      'quarter pound of beef' => '1/4 pound of beef'
+    }.each do |key, val|
+      puts '#{val} #{Numerizer.numerize(key)}'
+      assert_equal val, Numerizer.numerize(key)
+    end
+  end
+
+  def test_context_ordinal
+    {
+      'fourth' => '4th',
+      'twelfth' => '12th',
+      'second' => '2nd'
+    }.each do |key, val|
+      assert_equal val, Numerizer.numerize(key, context: :ordinal)
+    end
+  end
+
+  def test_context_cardinal
+    {
+      'fourth' => '1/4',
+      'twelfth' => '1/12'
+    }.each do |key, val|
+      assert_equal val, Numerizer.numerize(key, context: :cardinal)
+    end
+  end
+end  

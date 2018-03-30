@@ -73,11 +73,12 @@ class Numerizer
     ['sixth(s)?', 6],
     ['seventh(s)?', 7],
     ['eighth(s)?', 8],
-    ['nineth(s)?', 9],
+    ['ninth(s)?', 9],
   ]
 
   SINGLE_ORDINALS = [
     ['first', 1],
+    ['second', 2],
     ['third', 3],
     ['fourth', 4],
     ['fifth', 5],
@@ -132,9 +133,20 @@ class Numerizer
     end
 
     # handle fractions
-    FRACTIONS.each do |tp|
+    (FRACTIONS + DIRECT_ORDINALS.map { |on| [on[0]+'(s)?', on[1]]}).each do |tp|
       string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
-      string.gsub!(/\s#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
+      # TODO : Find Noun Distinction for Quarter
+      # Handle Edge Case with Quarter
+      if tp[0] == 'quarter(s)?' then
+        string.gsub!(/(?:\w*)(^|\W)#{tp[0]}(?=$|\W)/i) do |match|
+          if (match =~ /^(i|you|he|she|we|you|they|to|the)/i) == nil then 
+            match.gsub!(/(^|\W)#{tp[0]}/, '/' + tp[1].to_s)
+          end
+          match
+        end
+      else
+        string.gsub!(/(?<!the)\s#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
+      end
     end
 
     (DIRECT_ORDINALS + SINGLE_ORDINALS).each do |on|
@@ -144,6 +156,9 @@ class Numerizer
     # evaluate fractions when preceded by another number
     string.gsub!(/(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)/i) { ($1.to_f + ($3.to_f/$4.to_f)).to_s }
 
+    # fix unpreceeded fractions
+    string.gsub!(/(?:^|\W)\/(\d+)/, '1/\1')
+
     # hundreds, thousands, millions, etc.
     BIG_PREFIXES.each do |bp|
       string.gsub!(/(?:<num>)?(\d*) *#{bp[0]}/i) { $1.empty? ? bp[1] : '<num>' + (bp[1] * $1.to_i).to_s }
@@ -151,6 +166,9 @@ class Numerizer
     end
 
     andition(string)
+
+    # always substitute halfs
+    string.gsub!(/\bhalf\b/i, '1/2')
 
     string.gsub(/<num>/, '')
   end
