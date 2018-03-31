@@ -66,29 +66,25 @@ class Numerizer
 
   FRACTIONS = [
     ['hal(f|ves)', 2],
-    ['third(s)?', 3],
-    ['fourth(s)?', 4],
     ['quarter(s)?', 4],
-    ['fifth(s)?', 5],
-    ['sixth(s)?', 6],
-    ['seventh(s)?', 7],
-    ['eighth(s)?', 8],
-    ['ninth(s)?', 9],
   ]
 
-  SINGLE_ORDINALS = [
+  ORDINALS = [
     ['first', 1],
     ['second', 2],
+  ]
+
+  SINGLE_ORDINAL_FRACTIONALS = [
     ['third', 3],
     ['fourth', 4],
     ['fifth', 5],
     ['sixth', 6],
     ['seventh', 7],
     ['eighth', 8],
-    ['ninth', 9]
+    ['ninth', 9],
   ]
 
-  DIRECT_ORDINALS = [
+  DIRECT_ORDINAL_FRACTIONALS = [
     ['tenth', '10'],
     ['eleventh', '11'],
     ['twelfth', '12'],
@@ -109,7 +105,12 @@ class Numerizer
     ['ninetieth', '90']
   ]
 
-  def self.numerize(string, ignore: [])
+  ALL_ORDINALS = ORDINALS + SINGLE_ORDINAL_FRACTIONALS + DIRECT_ORDINAL_FRACTIONALS
+  ALL_FRACTIONS = FRACTIONS + (SINGLE_ORDINAL_FRACTIONALS + DIRECT_ORDINAL_FRACTIONALS).map {|tp| [tp[0] + '(s)?', tp[1]] }
+  ONLY_PLURAL_FRACTIONS = FRACTIONS + (SINGLE_ORDINAL_FRACTIONALS + DIRECT_ORDINAL_FRACTIONALS).map {|tp| [tp[0] + 's', tp[1]] }
+
+
+  def self.numerize(string, ignore: [], bias: :none)
     string = string.dup
     ignore = ignore.map(&:downcase).to_set
 
@@ -130,7 +131,7 @@ class Numerizer
         next if ignore.include? dn[0].downcase 
         string.gsub!(/(^|\W)#{tp[0]}#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s)
       end
-      SINGLE_ORDINALS.each do |dn|
+      (ORDINALS + SINGLE_ORDINAL_FRACTIONALS).each do |dn|
         next if ignore.include? dn[0].downcase 
         string.gsub!(/(^|\W)#{tp[0]}(\s)?#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s + dn[0][-2, 2])
       end
@@ -138,12 +139,21 @@ class Numerizer
     end
 
     # handle fractions
-    (FRACTIONS + DIRECT_ORDINALS.map { |on| [on[0]+'(s)?', on[1]]}).each do |tp|
+    # only plural fractions if ordinal mode
+    if bias == :ordinal
+      fractionals = ONLY_PLURAL_FRACTIONS 
+    else
+      fractionals = ALL_FRACTIONS
+    end
+
+    fractionals.each do |tp|
       next unless ignore.select {|x| /#{tp[0]}/.match?(x) } .empty?
       string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
       # TODO : Find Noun Distinction for Quarter
       # Handle Edge Case with Quarter
-      if tp[0] == 'quarter(s)?' then
+      if bias == :fractional
+        string.gsub!(/(^|\W)#{tp[0]}(?=$|\W)/i, '/' + tp[1].to_s)
+      elsif /quarter/ =~ tp[0] then
         string.gsub!(/(?:\w*)(^|\W)#{tp[0]}(?=$|\W)/i) do |match|
           if (match =~ /^(i|you|he|she|we|it|you|they|to|the)/i) == nil then 
             match.gsub!(/(^|\W)#{tp[0]}/, '/' + tp[1].to_s)
@@ -155,7 +165,8 @@ class Numerizer
       end
     end
 
-    (DIRECT_ORDINALS + SINGLE_ORDINALS).each do |on|
+    ALL_ORDINALS.each do |on|
+      break if bias == :fractional # shouldn't be necessary but saves cycles
       next if ignore.include? on[0].downcase 
       string.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
     end

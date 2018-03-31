@@ -154,14 +154,16 @@ class NumerizerTest < TestCase
     assert_equal 'the fifty 2', Numerizer.numerize('the fifty two', ignore: ['fifty'])
   end
 
-  def test_context_ordinal
-    assert_equal '4th', Numerizer.numerize('fourth', context: :ordinal)
-    assert_equal '12th', Numerizer.numerize('twelfth', context: :ordinal)
-    assert_equal '2nd', Numerizer.numerize('second', context: :ordinal)
+  def test_bias_ordinal
+    assert_equal '4th', Numerizer.numerize('fourth', bias: :ordinal)
+    assert_equal '12th', Numerizer.numerize('twelfth', bias: :ordinal)
+    assert_equal '2nd', Numerizer.numerize('second', bias: :ordinal)
+    assert_equal '3/5', Numerizer.numerize('three fifths', bias: :ordinal)
   end
 
-  def test_context_fractional
-    assert_equal '1/4', Numerizer.numerize('fourth', context: :fractional)
-    assert_equal '1/12', Numerizer.numerize('twelfth', context: :fractional)
+  def test_bias_fractional
+    assert_equal '1/4', Numerizer.numerize('fourth', bias: :fractional)
+    assert_equal '1/12', Numerizer.numerize('twelfth', bias: :fractional)
+    assert_equal 'the 1/4', Numerizer.numerize('the fourth', bias: :fractional)
   end
 end  
