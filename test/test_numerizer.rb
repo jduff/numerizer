@@ -165,5 +165,6 @@ class NumerizerTest < TestCase
     assert_equal '1/4', Numerizer.numerize('fourth', bias: :fractional)
     assert_equal '1/12', Numerizer.numerize('twelfth', bias: :fractional)
     assert_equal 'the 1/4', Numerizer.numerize('the fourth', bias: :fractional)
+    assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :fractional)
   end
-end  
+end 
