@@ -134,39 +134,34 @@ class NumerizerTest < TestCase
   def test_ambiguous_cases
     # Quarter ( Coin ) is Untested
     # Second ( Time / Verb ) is Untested
-    {
-      'the fourth' => 'the 4th',
-      'a third of' => '1/3 of',
-      'fourth' => '4th',
-      'second' => '2nd',
-      'I quarter' => 'I quarter',
-      'You quarter' => 'You quarter',
-      'I want to quarter' => 'I want to quarter',
-#      'I peel and quarter bananas' => 'I peel and quarter bananas', # TODO: Find way to distinguish this verb
-      'the first quarter' => 'the 1st 1/4',
-      'quarter pound of beef' => '1/4 pound of beef'
-    }.each do |key, val|
-      puts '#{val} #{Numerizer.numerize(key)}'
-      assert_equal val, Numerizer.numerize(key)
-    end
+    assert_equal 'the 4th', Numerizer.numerize('the fourth')
+    assert_equal '1/3 of', Numerizer.numerize('a third of')
+    assert_equal '4th', Numerizer.numerize('fourth')
+    assert_equal '2nd', Numerizer.numerize('second')
+    assert_equal 'I quarter', Numerizer.numerize('I quarter')
+    assert_equal 'You quarter', Numerizer.numerize('You quarter')
+    assert_equal 'I want to quarter', Numerizer.numerize('I want to quarter')
+    assert_equal 'the 1st 1/4', Numerizer.numerize('the first quarter')
+    assert_equal '1/4 pound of beef', Numerizer.numerize('quarter pound of beef')
+
+#   assert_equal 'I peel and quarter bananas', Numerizer.numerize('I peel and quarter bananas') # TODO: Find way to distinguish this verb
+  end
+
+  def test_ignore
+    assert_equal 'the second day of march', Numerizer.numerize('the second day of march', ignore: ['second'])
+    assert_equal 'quarter', Numerizer.numerize('quarter', ignore: ['quarter'])
+    assert_equal 'the five guys', Numerizer.numerize('the five guys', ignore: ['five'])
+    assert_equal 'the fifty 2', Numerizer.numerize('the fifty two', ignore: ['fifty'])
   end
 
   def test_context_ordinal
-    {
-      'fourth' => '4th',
-      'twelfth' => '12th',
-      'second' => '2nd'
-    }.each do |key, val|
-      assert_equal val, Numerizer.numerize(key, context: :ordinal)
-    end
+    assert_equal '4th', Numerizer.numerize('fourth', context: :ordinal)
+    assert_equal '12th', Numerizer.numerize('twelfth', context: :ordinal)
+    assert_equal '2nd', Numerizer.numerize('second', context: :ordinal)
   end
 
-  def test_context_cardinal
-    {
-      'fourth' => '1/4',
-      'twelfth' => '1/12'
-    }.each do |key, val|
-      assert_equal val, Numerizer.numerize(key, context: :cardinal)
-    end
+  def test_context_fractional
+    assert_equal '1/4', Numerizer.numerize('fourth', context: :fractional)
+    assert_equal '1/12', Numerizer.numerize('twelfth', context: :fractional)
   end
 end  

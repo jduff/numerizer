@@ -65,7 +65,7 @@ class Numerizer
   ]
 
   FRACTIONS = [
-    ['half', 2],
+    ['hal(f|ves)', 2],
     ['third(s)?', 3],
     ['fourth(s)?', 4],
     ['quarter(s)?', 4],
@@ -109,8 +109,9 @@ class Numerizer
     ['ninetieth', '90']
   ]
 
-  def self.numerize(string)
+  def self.numerize(string, ignore: [])
     string = string.dup
+    ignore = ignore.map(&:downcase).to_set
 
     # preprocess
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
@@ -118,15 +119,19 @@ class Numerizer
 
     # easy/direct replacements
     (DIRECT_NUMS + SINGLE_NUMS).each do |dn|
-      string.gsub!(/(^|\W)#{dn[0]}(?=$|\W)/i, '\1<num>' + dn[1].to_s)
+      next if ignore.include? dn[0].downcase 
+      string.gsub!(/(^|\W)#{dn[0]}(?=$|\W)/i, '\1<num>' + dn[1].to_s) 
     end
 
     # ten, twenty, etc.
     TEN_PREFIXES.each do |tp|
+      next if ignore.include? tp[0].downcase 
       SINGLE_NUMS.each do |dn|
+        next if ignore.include? dn[0].downcase 
         string.gsub!(/(^|\W)#{tp[0]}#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s)
       end
       SINGLE_ORDINALS.each do |dn|
+        next if ignore.include? dn[0].downcase 
         string.gsub!(/(^|\W)#{tp[0]}(\s)?#{dn[0]}(?=$|\W)/i, '\1<num>' + (tp[1] + dn[1]).to_s + dn[0][-2, 2])
       end
       string.gsub!(/(^|\W)#{tp[0]}(?=$|\W)/i, '\1<num>' + tp[1].to_s)
@@ -134,6 +139,7 @@ class Numerizer
 
     # handle fractions
     (FRACTIONS + DIRECT_ORDINALS.map { |on| [on[0]+'(s)?', on[1]]}).each do |tp|
+      next unless ignore.select {|x| /#{tp[0]}/.match?(x) } .empty?
       string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
       # TODO : Find Noun Distinction for Quarter
       # Handle Edge Case with Quarter
@@ -150,6 +156,7 @@ class Numerizer
     end
 
     (DIRECT_ORDINALS + SINGLE_ORDINALS).each do |on|
+      next if ignore.include? on[0].downcase 
       string.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
     end
 
@@ -162,6 +169,7 @@ class Numerizer
 
     # hundreds, thousands, millions, etc.
     BIG_PREFIXES.each do |bp|
+      next if ignore.include? bp[0].downcase 
       string.gsub!(/(?:<num>)?(\d*) *#{bp[0]}/i) { $1.empty? ? bp[1] : '<num>' + (bp[1] * $1.to_i).to_s }
       andition(string)
     end
@@ -169,7 +177,9 @@ class Numerizer
     andition(string)
 
     # always substitute halfs
-    string.gsub!(/\bhalf\b/i, '1/2')
+    unless ignore.include? 'half' then
+      string.gsub!(/\bhalf\b/i, '1/2')
+    end
 
     string.gsub(/<num>/, '')
   end
