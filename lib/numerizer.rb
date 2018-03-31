@@ -139,7 +139,7 @@ class Numerizer
       # Handle Edge Case with Quarter
       if tp[0] == 'quarter(s)?' then
         string.gsub!(/(?:\w*)(^|\W)#{tp[0]}(?=$|\W)/i) do |match|
-          if (match =~ /^(i|you|he|she|we|you|they|to|the)/i) == nil then 
+          if (match =~ /^(i|you|he|she|we|it|you|they|to|the)/i) == nil then 
             match.gsub!(/(^|\W)#{tp[0]}/, '/' + tp[1].to_s)
           end
           match
@@ -158,6 +158,7 @@ class Numerizer
 
     # fix unpreceeded fractions
     string.gsub!(/(?:^|\W)\/(\d+)/, '1/\1')
+    string.gsub!(/(?<=[a-zA-Z])\/(\d+)/, ' 1/\1')
 
     # hundreds, thousands, millions, etc.
     BIG_PREFIXES.each do |bp|

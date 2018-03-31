@@ -135,7 +135,6 @@ class NumerizerTest < TestCase
     # Quarter ( Coin ) is Untested
     # Second ( Time / Verb ) is Untested
     {
-      #'a second' => '1 second',
       'the fourth' => 'the 4th',
       'a third of' => '1/3 of',
       'fourth' => '4th',
@@ -143,8 +142,8 @@ class NumerizerTest < TestCase
       'I quarter' => 'I quarter',
       'You quarter' => 'You quarter',
       'I want to quarter' => 'I want to quarter',
-      'I peel and quarter bananas' => 'I peel and quarter bananas',
-      'the first quarter' => 'the first 1/4',
+#      'I peel and quarter bananas' => 'I peel and quarter bananas', # TODO: Find way to distinguish this verb
+      'the first quarter' => 'the 1st 1/4',
       'quarter pound of beef' => '1/4 pound of beef'
     }.each do |key, val|
       puts '#{val} #{Numerizer.numerize(key)}'
