@@ -147,7 +147,7 @@ class Numerizer
     end
 
     fractionals.each do |tp|
-      next unless ignore.select {|x| /#{tp[0]}/.match?(x) } .empty?
+      next unless ignore.select {|x| /#{tp[0]}/ =~ x } .empty?
       string.gsub!(/a #{tp[0]}(?=$|\W)/i, '<num>1/' + tp[1].to_s)
       # TODO : Find Noun Distinction for Quarter
       # Handle Edge Case with Quarter
