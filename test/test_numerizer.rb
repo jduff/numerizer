@@ -143,6 +143,8 @@ class NumerizerTest < TestCase
     assert_equal 'I want to quarter', Numerizer.numerize('I want to quarter')
     assert_equal 'the 1st 1/4', Numerizer.numerize('the first quarter')
     assert_equal '1/4 pound of beef', Numerizer.numerize('quarter pound of beef')
+    assert_equal 'the 2nd second', Numerizer.numerize('the second second')
+    assert_equal '1 second', Numerizer.numerize('one second')
 
 #   assert_equal 'I peel and quarter bananas', Numerizer.numerize('I peel and quarter bananas') # TODO: Find way to distinguish this verb
   end

@@ -109,6 +109,8 @@ class Numerizer
   ALL_FRACTIONS = FRACTIONS + (SINGLE_ORDINAL_FRACTIONALS + DIRECT_ORDINAL_FRACTIONALS).map {|tp| [tp[0] + '(s)?', tp[1]] }
   ONLY_PLURAL_FRACTIONS = FRACTIONS + (SINGLE_ORDINAL_FRACTIONALS + DIRECT_ORDINAL_FRACTIONALS).map {|tp| [tp[0] + 's', tp[1]] }
 
+  ALL_ORDINALS_REGEX = ALL_ORDINALS.reduce { |a,b| a[0] + '|' + b[0] }
+
 
   def self.numerize(string, ignore: [], bias: :none)
     string = string.dup
@@ -168,7 +170,17 @@ class Numerizer
     ALL_ORDINALS.each do |on|
       break if bias == :fractional # shouldn't be necessary but saves cycles
       next if ignore.include? on[0].downcase 
-      string.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
+      if on[0] == 'second' and bias != :ordinal then
+        # We don't want to substitute second preceeded by second or another ordinal
+        string.gsub!(/\w*(?<!second)(^|\W)#{on[0]}(?=$|\W)/i) do |match| 
+          unless match =~ /^(\d|#{ALL_ORDINALS_REGEX})/ then
+            match.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
+          end
+          match
+        end
+      else
+        string.gsub!(/(^|\W)#{on[0]}(?=$|\W)/i, '\1<num>' + on[1].to_s + on[0][-2, 2])
+      end
     end
 
     # evaluate fractions when preceded by another number
