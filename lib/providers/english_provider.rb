@@ -138,8 +138,8 @@ class EnglishProvider < GenericProvider
       string.gsub!(/(^|\W)(#{fractionals})(?=$|\W)/i) {'/' + ALL_FRACTIONS[$2].to_s}
     else
       string.gsub!(/(\w*)(?<!the)(^|\W)(#{fractionals})(?=$|\W)/i) do |match|
-        prematch = $1 || ""
-        space = $2 || ""
+        prematch = $1 
+        space = $2
         fraction = $3
         # HANDLES QUARTER EDGE CASES
         if (!$3.start_with?('quarter') && space == ' ') || ($3.start_with?('quarter') && (prematch =~ /^(#{PRONOUNS})\b/) == nil) 
