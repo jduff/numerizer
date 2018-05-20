@@ -123,16 +123,15 @@ class Numerizer
     ignore = ignore.map(&:downcase).to_set
 
     preprocess(string)
-    sub_numerals(string, ignore)
-    sub_fractions(string, ignore, bias)
-    sub_ordinals(string, ignore, bias)
+    numerize_numerals(string, ignore)
+    numerize_fractions(string, ignore, bias)
+    numerize_ordinals(string, ignore, bias)
     cleanup_fractions(string)
-    sub_bigprefs(string, ignore)
+    numerize_big_prefixes(string, ignore)
     andition(string)
     sub_halves(string, ignore)
+    postprocess(string, ignore)
 
-    #Strip Away Added Num Tags
-    string.gsub(/<num>/, '')
   end
 
   class << self
@@ -143,28 +142,28 @@ class Numerizer
       string.gsub!(/\ba$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
     end
 
-    def sub_numerals(string, ignore)
+    def numerize_numerals(string, ignore)
       # easy/direct replacements
-      dir_single_nums = (DIRECT_SINGLE_NUMS).keys.reject { |x| ignore.include? x }
-      string.gsub!(/(^|\W)(#{Regexp.union(dir_single_nums)})(?=$|\W)/i) { $1 + '<num>' + DIRECT_SINGLE_NUMS[$2].to_s} 
+      dir_single_nums = regexify(DIRECT_SINGLE_NUMS.keys, ignore: ignore)
+      string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 + '<num>' + DIRECT_SINGLE_NUMS[$2].to_s} 
       string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
 
       # ten, twenty, etc.
-      ten_prefs = Regexp.union(TEN_PREFIXES.keys.reject { |x| ignore.include? x })
-      single_nums = Regexp.union(SINGLE_NUMS.keys.reject { |x| ignore.include? x })
-      single_ords = Regexp.union(ORDINAL_SINGLE.keys.reject { |x| ignore.include? x })
+      ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
+      single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
+      single_ords = regexify(ORDINAL_SINGLE.keys, ignore: ignore)
       string.gsub!(/(^|\W)(#{ten_prefs})(#{single_nums})(?=$|\W)/i) { $1 + '<num>' + (TEN_PREFIXES[$2] + SINGLE_NUMS[$3]).to_s}
       string.gsub!(/(^|\W)(#{ten_prefs})(\s)?(#{single_ords})(?=$|\W)/i) { $1 + '<num>' + (TEN_PREFIXES[$2] + ORDINAL_SINGLE[$4]).to_s + $4[-2, 2]}
       string.gsub!(/(^|\W)(#{ten_prefs})(?=$|\W)/i) { $1 + '<num>' + TEN_PREFIXES[$2].to_s}
     end
 
-    def sub_fractions(string, ignore, bias)
+    def numerize_fractions(string, ignore, bias)
       # handle fractions
       # only plural fractions if ordinal mode
       if bias == :ordinal
-        fractionals = Regexp.union(ONLY_PLURAL_FRACTIONS.keys.reject{ |x| ignore.include? x }) 
+        fractionals = regexify(ONLY_PLURAL_FRACTIONS.keys, ignore: ignore)
       else
-        fractionals = Regexp.union(ALL_FRACTIONS.keys.reject{ |x| ignore.include? x})
+        fractionals = regexify(ALL_FRACTIONS.keys, ignore: ignore)
       end
 
       string.gsub!(/a (#{fractionals})(?=$|\W)/i) {'<num>1/' + ALL_FRACTIONS[$1].to_s}
@@ -185,9 +184,9 @@ class Numerizer
       end
     end
 
-    def sub_ordinals(string, ignore, bias)
+    def numerize_ordinals(string, ignore, bias)
       if bias != :fractionals
-        all_ords = Regexp.union(ALL_ORDINALS.keys.reject {|x| ignore.include?(x) || (x == 'second' && bias != :ordinal) })
+        all_ords = regexify(ALL_ORDINALS.keys, ignore: ignore) {|x| x == 'second' && bias != :ordinal }
         if bias != :ordinal && !ignore.include?('second')
           string.gsub!(/(\w*)(?<!second)(^|\W)second(?=$|\W)/i) do |match| 
             prematch = $1
@@ -210,9 +209,9 @@ class Numerizer
       string.gsub!(/(?<=[a-zA-Z])\/(\d+)/, ' 1/\1')
     end
 
-    def sub_bigprefs(string, ignore)
+    def numerize_big_prefixes(string, ignore)
       # hundreds, thousands, millions, etc.
-      # big_prefs = Regexp.union(BIG_PREFIXES.keys.reject { |x| ignore.include? x })
+      # big_prefs = regexify(BIG_PREFIXES.keys, ignore: ignore)
       BIG_PREFIXES.each do |k,v|
         next if ignore.include? k.downcase 
         string.gsub!(/(?:<num>)?(\d*) *#{k}/i) { $1.empty? ? v : '<num>' + (v * $1.to_i).to_s }
@@ -234,6 +233,21 @@ class Numerizer
           string[(sc.pos - sc.matched_size)..(sc.pos-1)] = '<num>' + (sc[1].to_i + sc[3].to_i).to_s
           sc.reset
         end
+      end
+    end
+
+    def postprocess(string, ignore)
+      andition(string)
+      numerize_halves(string, ignore)
+      #Strip Away Added Num Tags
+      string.gsub(/<num>/, '')
+    end
+
+    def regexify(words, ignore:[])
+      if block_given?
+        return Regexp.union(words.reject { |x| ignore.include?(x) || yield(x) })
+      else
+        return Regexp.union(words.reject { |x| ignore.include?(x) })
       end
     end
 
