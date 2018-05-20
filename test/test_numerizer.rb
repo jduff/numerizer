@@ -94,6 +94,7 @@ class NumerizerTest < TestCase
     assert_equal '1/2', Numerizer.numerize('1/2')
     assert_equal '05/06', Numerizer.numerize('05/06')
     assert_equal "3.5 hours", Numerizer.numerize("three and a half hours")
+    assert_equal "1/2 an hour", Numerizer.numerize("half an hour")
   end
 
   def test_ordinal_strings
@@ -161,6 +162,7 @@ class NumerizerTest < TestCase
     assert_equal '12th', Numerizer.numerize('twelfth', bias: :ordinal)
     assert_equal '2nd', Numerizer.numerize('second', bias: :ordinal)
     assert_equal '3/5', Numerizer.numerize('three fifths', bias: :ordinal)
+    assert_equal '1 4th of', Numerizer.numerize('a fourth of', bias: :ordinal)
   end
 
   def test_bias_fractional
@@ -168,5 +170,6 @@ class NumerizerTest < TestCase
     assert_equal '1/12', Numerizer.numerize('twelfth', bias: :fractional)
     assert_equal 'the 1/4', Numerizer.numerize('the fourth', bias: :fractional)
     assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :fractional)
+    assert_equal '1/4 of', Numerizer.numerize('a fourth of', bias: :fractional)
   end
 end 
