@@ -1,4 +1,5 @@
 require 'provider'
+require 'strscan'
 
 class EnglishProvider < GenericProvider
 
@@ -111,16 +112,16 @@ class EnglishProvider < GenericProvider
   def numerize_numerals(string, ignore)
     # easy/direct replacements
     dir_single_nums = regexify(DIRECT_SINGLE_NUMS.keys, ignore: ignore)
-    string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 + '<num>' + DIRECT_SINGLE_NUMS[$2].to_s} 
+    string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
     string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
 
     # ten, twenty, etc.
     ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
     single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
     single_ords = regexify(ORDINAL_SINGLE.keys, ignore: ignore)
-    string.gsub!(/(^|\W)(#{ten_prefs})(#{single_nums})(?=$|\W)/i) { $1 + '<num>' + (TEN_PREFIXES[$2] + SINGLE_NUMS[$3]).to_s}
-    string.gsub!(/(^|\W)(#{ten_prefs})(\s)?(#{single_ords})(?=$|\W)/i) { $1 + '<num>' + (TEN_PREFIXES[$2] + ORDINAL_SINGLE[$4]).to_s + $4[-2, 2]}
-    string.gsub!(/(^|\W)(#{ten_prefs})(?=$|\W)/i) { $1 + '<num>' + TEN_PREFIXES[$2].to_s}
+    string.gsub!(/(^|\W)(#{ten_prefs})(#{single_nums})(?=$|\W)/i) { $1 << '<num>' << (TEN_PREFIXES[$2] + SINGLE_NUMS[$3]).to_s}
+    string.gsub!(/(^|\W)(#{ten_prefs})(\s)?(#{single_ords})(?=$|\W)/i) { $1 << '<num>' << (TEN_PREFIXES[$2] + ORDINAL_SINGLE[$4]).to_s << $4[-2, 2]}
+    string.gsub!(/(^|\W)(#{ten_prefs})(?=$|\W)/i) { $1 << '<num>' << TEN_PREFIXES[$2].to_s}
   end
 
   def numerize_fractions(string, ignore, bias)
@@ -132,10 +133,10 @@ class EnglishProvider < GenericProvider
       fractionals = regexify(ALL_FRACTIONS.keys, ignore: ignore)
     end
 
-    string.gsub!(/a (#{fractionals})(?=$|\W)/i) {'<num>1/' + ALL_FRACTIONS[$1].to_s}
+    string.gsub!(/a (#{fractionals})(?=$|\W)/i) {'<num>1/' << ALL_FRACTIONS[$1].to_s}
     # TODO : Find Noun Distinction for Quarter
     if bias == :fractional
-      string.gsub!(/(^|\W)(#{fractionals})(?=$|\W)/i) {'/' + ALL_FRACTIONS[$2].to_s}
+      string.gsub!(/(^|\W)(#{fractionals})(?=$|\W)/i) {'/' << ALL_FRACTIONS[$2].to_s}
     else
       string.gsub!(/(\w*)(?<!the)(^|\W)(#{fractionals})(?=$|\W)/i) do |match|
         prematch = $1 
@@ -143,7 +144,7 @@ class EnglishProvider < GenericProvider
         fraction = $3
         # HANDLES QUARTER EDGE CASES
         if (!$3.start_with?('quarter') && space == ' ') || ($3.start_with?('quarter') && (prematch =~ /^(#{PRONOUNS})\b/) == nil) 
-            match = prematch + '/' + ALL_FRACTIONS[fraction].to_s 
+            match = prematch << '/' << ALL_FRACTIONS[fraction].to_s 
         end
         match
       end
@@ -160,34 +161,34 @@ class EnglishProvider < GenericProvider
   end
 
   def numerize_ordinals(string, ignore, bias)
-    if bias != :fractionals
+    unless bias == :fractionals
       all_ords = regexify(ALL_ORDINALS.keys, ignore: ignore) {|x| x == 'second' && bias != :ordinal }
       if bias != :ordinal && !ignore.include?('second')
         string.gsub!(/(\w*)(?<!second)(^|\W)second(?=$|\W)/i) do |match| 
           prematch = $1
           space = $2
           if (prematch =~ /^(\d|#{ALL_ORDINALS_REGEX})/i) == nil
-            match = prematch + space + '<num>' + ALL_ORDINALS['second'].to_s + 'second'[-2, 2]
+            match = prematch << space << '<num>' << ALL_ORDINALS['second'].to_s << 'second'[-2, 2]
           end
           match
         end
       end
-      string.gsub!(/(^|\W)(#{all_ords})(?=$|\W)/i) { $1 + '<num>' + ALL_ORDINALS[$2].to_s + $2[-2, 2]}
+      string.gsub!(/(^|\W)(#{all_ords})(?=$|\W)/i) { $1 << '<num>' << ALL_ORDINALS[$2].to_s << $2[-2, 2]}
     end
   end
 
+  # hundreds, thousands, millions, etc.
   def numerize_big_prefixes(string, ignore)
-    # hundreds, thousands, millions, etc.
     # big_prefs = regexify(BIG_PREFIXES.keys, ignore: ignore)
     BIG_PREFIXES.each do |k,v|
       next if ignore.include? k.downcase 
-      string.gsub!(/(?:<num>)?(\d*) *#{k}/i) { $1.empty? ? v : '<num>' + (v * $1.to_i).to_s }
+      string.gsub!(/(?:<num>)?(\d*) *#{k}/i) { $1.empty? ? v : '<num>' << (v * $1.to_i).to_s }
       andition(string)
     end
   end
 
+  # always substitute halfs
   def numerize_halves(string, ignore)
-    # always substitute halfs
     unless ignore.include? 'half'
       string.gsub!(/\bhalf\b/i, '1/2')
     end
@@ -197,7 +198,7 @@ class EnglishProvider < GenericProvider
     sc = StringScanner.new(string)
     while(sc.scan_until(/<num>(\d+)( | and )<num>(\d+)(?=[^\w]|$)/i))
       if sc[2] =~ /and/ || sc[1].size > sc[3].size
-        string[(sc.pos - sc.matched_size)..(sc.pos-1)] = '<num>' + (sc[1].to_i + sc[3].to_i).to_s
+        string[(sc.pos - sc.matched_size)..(sc.pos-1)] = '<num>' << (sc[1].to_i + sc[3].to_i).to_s
         sc.reset
       end
     end

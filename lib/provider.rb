@@ -30,6 +30,8 @@ class GenericProvider
     raise 'must be implemented in subclass'
   end
 
+  # Turns list of words into a unionized list, ignoring words specified in 
+  # arguments or that meet the conditions of the yield block
   def regexify(words, ignore:[])
     if block_given?
       return Regexp.union(words.reject { |x| ignore.include?(x) || yield(x) })
@@ -37,6 +39,5 @@ class GenericProvider
       return Regexp.union(words.reject { |x| ignore.include?(x) })
     end
   end
-
 
 end
