@@ -20,7 +20,11 @@ class Numerizer
   def self.numerize(string,lang: 'en', ignore: [], bias: :none)
     string = string.dup
     ignore = ignore.map(&:downcase).to_set
-    PROVIDERS[lang].numerize(string, ignore: ignore, bias: bias)
+    provider = PROVIDERS[lang]
+    if provider == nil
+      raise "Language #{lang} not found. Language options include #{PROVIDERS.keys}"
+    end
+    provider.numerize(string, ignore: ignore, bias: bias)
   end
 
 end

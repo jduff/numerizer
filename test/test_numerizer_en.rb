@@ -1,6 +1,13 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-class NumerizerTest < TestCase
+class NumerizerTestEN < TestCase
+  def test_en_argument
+    assert_equal '12', Numerizer.numerize('twelve', lang: 'en')
+    assert_raises RuntimeError do
+      Numerizer.numerize('twelve', lang: 'english')
+    end
+  end
+
   def test_straight_parsing
     strings = {
       1 => 'one',
@@ -145,9 +152,11 @@ class NumerizerTest < TestCase
     assert_equal 'the 1st 1/4', Numerizer.numerize('the first quarter')
     assert_equal '1/4 pound of beef', Numerizer.numerize('quarter pound of beef')
     assert_equal 'the 2nd second', Numerizer.numerize('the second second')
+    assert_equal 'the 4th second', Numerizer.numerize('the fourth second')
     assert_equal '1 second', Numerizer.numerize('one second')
 
-#   assert_equal 'I peel and quarter bananas', Numerizer.numerize('I peel and quarter bananas') # TODO: Find way to distinguish this verb
+  # TODO: Find way to distinguish this verb
+  # assert_equal 'I peel and quarter bananas', Numerizer.numerize('I peel and quarter bananas')
   end
 
   def test_ignore
@@ -163,6 +172,7 @@ class NumerizerTest < TestCase
     assert_equal '2nd', Numerizer.numerize('second', bias: :ordinal)
     assert_equal '3/5', Numerizer.numerize('three fifths', bias: :ordinal)
     assert_equal '1 4th of', Numerizer.numerize('a fourth of', bias: :ordinal)
+    assert_equal 'the 1st 2nd 3rd',  Numerizer.numerize('the first second third', bias: :ordinal)
   end
 
   def test_bias_fractional
@@ -171,5 +181,6 @@ class NumerizerTest < TestCase
     assert_equal 'the 1/4', Numerizer.numerize('the fourth', bias: :fractional)
     assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :fractional)
     assert_equal '1/4 of', Numerizer.numerize('a fourth of', bias: :fractional)
+    assert_equal 'I 1/4 your home', Numerizer.numerize('I quarter your home', bias: :fractional)
   end
 end 
