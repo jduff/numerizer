@@ -174,7 +174,7 @@ class NumerizerTestEN < TestCase
     assert_equal 'the 4th', Numerizer.numerize('the fourth', bias: :ordinal)
     assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :ordinal)
     assert_equal '3/5', Numerizer.numerize('three fifths', bias: :ordinal)
-    assert_equal '1 4th of', Numerizer.numerize('a fourth of', bias: :ordinal)
+    assert_equal 'a 4th of', Numerizer.numerize('a fourth of', bias: :ordinal)
     assert_equal 'I quarter your home', Numerizer.numerize('I quarter your home', bias: :ordinal)
     assert_equal 'the 1st 2nd 3rd',  Numerizer.numerize('the first second third', bias: :ordinal)
   end

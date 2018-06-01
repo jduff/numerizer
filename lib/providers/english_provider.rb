@@ -109,7 +109,7 @@ class EnglishProvider < GenericProvider
     string.gsub!(/\ba$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
   end
 
-  def numerize_numerals(string, ignore)
+  def numerize_numerals(string, ignore, bias)
     single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
     dir_single_nums = regexify(DIRECT_SINGLE_NUMS.keys, ignore: ignore)
     ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
@@ -118,7 +118,11 @@ class EnglishProvider < GenericProvider
     # easy/direct replacements
     string.gsub!(/(^|\W)(#{single_nums})(\s#{ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred' << $3}
     string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
-    string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
+    if bias == :ordinal
+      string.gsub!(/(^|\W)\ba\b(?=$|\W)(?! #{ALL_ORDINALS_REGEX})/i, '\1<num>' + 1.to_s)
+    else
+      string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
+    end
 
     # ten, twenty, etc.
     string.gsub!(/(^|\W)(#{ten_prefs})(#{single_nums})(?=$|\W)/i) { $1 << '<num>' << (TEN_PREFIXES[$2] + SINGLE_NUMS[$3]).to_s}
@@ -172,7 +176,7 @@ class EnglishProvider < GenericProvider
   end
 
   # hundreds, thousands, millions, etc.
-  def numerize_big_prefixes(string, ignore)
+  def numerize_big_prefixes(string, ignore, bias)
     # big_prefs = regexify(BIG_PREFIXES.keys, ignore: ignore)
     BIG_PREFIXES.each do |k,v|
       next if ignore.include? k.downcase 

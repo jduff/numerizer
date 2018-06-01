@@ -2,10 +2,10 @@ class GenericProvider
 
   def numerize(str, ignore: [], bias: :none)
     preprocess(str, ignore)
-    numerize_numerals(str, ignore)
+    numerize_numerals(str, ignore, bias)
     numerize_fractions(str, ignore, bias)
     numerize_ordinals(str, ignore, bias)
-    numerize_big_prefixes(str, ignore)
+    numerize_big_prefixes(str, ignore, bias)
     postprocess(str, ignore)
   end
 
@@ -14,7 +14,7 @@ class GenericProvider
   def preprocess(str, ignore)
     raise 'must be implemented in subclass'
   end
-  def numerize_numerals(str, ignore)
+  def numerize_numerals(str, ignore, bias)
     raise 'must be implemented in subclass'
   end
   def numerize_fractions(str, ignore, bias)
@@ -23,7 +23,7 @@ class GenericProvider
   def numerize_ordinals(str, ignore, bias)
     raise 'must be implemented in subclass'
   end
-  def numerize_big_prefixes(str, ignore)
+  def numerize_big_prefixes(str, ignore, bias)
     raise 'must be implemented in subclass'
   end
   def postprocess(str, ignore)
