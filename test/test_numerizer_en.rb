@@ -31,7 +31,7 @@ class NumerizerTestEN < TestCase
       59 => 'fifty nine',
       100 => ['one hundred', 'a hundred', 'hundred a'],
       150 => 'one hundred and fifty',
-      # 150 => 'one fifty',
+      150 => 'one fifty',
       200 => 'two-hundred',
       500 => '5 hundred',
       999 => 'nine hundred and ninety nine',
@@ -109,6 +109,7 @@ class NumerizerTestEN < TestCase
       'first' => '1st',
       'second' => '2nd',
       'third' => '3rd',
+      'fourth' => '4th',
       'fifth' => '5th',
       'seventh' => '7th',
       'eighth' => '8th',
@@ -170,17 +171,23 @@ class NumerizerTestEN < TestCase
     assert_equal '4th', Numerizer.numerize('fourth', bias: :ordinal)
     assert_equal '12th', Numerizer.numerize('twelfth', bias: :ordinal)
     assert_equal '2nd', Numerizer.numerize('second', bias: :ordinal)
+    assert_equal 'the 4th', Numerizer.numerize('the fourth', bias: :ordinal)
+    assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :ordinal)
     assert_equal '3/5', Numerizer.numerize('three fifths', bias: :ordinal)
     assert_equal '1 4th of', Numerizer.numerize('a fourth of', bias: :ordinal)
+    assert_equal 'I quarter your home', Numerizer.numerize('I quarter your home', bias: :ordinal)
     assert_equal 'the 1st 2nd 3rd',  Numerizer.numerize('the first second third', bias: :ordinal)
   end
 
   def test_bias_fractional
     assert_equal '1/4', Numerizer.numerize('fourth', bias: :fractional)
     assert_equal '1/12', Numerizer.numerize('twelfth', bias: :fractional)
+    assert_equal '2nd', Numerizer.numerize('second', bias: :fractional)
     assert_equal 'the 1/4', Numerizer.numerize('the fourth', bias: :fractional)
     assert_equal '2.75', Numerizer.numerize('two and three fourths', bias: :fractional)
+    assert_equal '3/5', Numerizer.numerize('three fifths', bias: :fractional)
     assert_equal '1/4 of', Numerizer.numerize('a fourth of', bias: :fractional)
     assert_equal 'I 1/4 your home', Numerizer.numerize('I quarter your home', bias: :fractional)
+    assert_equal 'the 1st second 1/3',  Numerizer.numerize('the first second third', bias: :fractional)
   end
 end 

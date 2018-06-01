@@ -110,15 +110,17 @@ class EnglishProvider < GenericProvider
   end
 
   def numerize_numerals(string, ignore)
-    # easy/direct replacements
+    single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
     dir_single_nums = regexify(DIRECT_SINGLE_NUMS.keys, ignore: ignore)
+    ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
+    single_ords = regexify(ORDINAL_SINGLE.keys, ignore: ignore)
+
+    # easy/direct replacements
+    string.gsub!(/(^|\W)(#{single_nums})(\s#{ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred' << $3}
     string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
     string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
 
     # ten, twenty, etc.
-    ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
-    single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
-    single_ords = regexify(ORDINAL_SINGLE.keys, ignore: ignore)
     string.gsub!(/(^|\W)(#{ten_prefs})(#{single_nums})(?=$|\W)/i) { $1 << '<num>' << (TEN_PREFIXES[$2] + SINGLE_NUMS[$3]).to_s}
     string.gsub!(/(^|\W)(#{ten_prefs})(\s)?(#{single_ords})(?=$|\W)/i) { $1 << '<num>' << (TEN_PREFIXES[$2] + ORDINAL_SINGLE[$4]).to_s << $4[-2, 2]}
     string.gsub!(/(^|\W)(#{ten_prefs})(?=$|\W)/i) { $1 << '<num>' << TEN_PREFIXES[$2].to_s}
