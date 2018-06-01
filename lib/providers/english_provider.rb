@@ -100,9 +100,9 @@ class EnglishProvider < GenericProvider
   DIRECT_SINGLE_NUMS = DIRECT_NUMS.merge(SINGLE_NUMS)
   ORDINAL_SINGLE = ORDINALS.merge(SINGLE_ORDINAL_FRACTIONALS)
 
-  ALL_ORDINALS_REGEX = Regexp.union(ALL_ORDINALS.keys)
-
-  PRONOUNS = /i|you|he|she|we|it|you|they|to|the/i
+  # REGEXP.UNION here breaks insertion into negative Lookbehind
+  ALL_ORDINALS_REGEX = ALL_ORDINALS.keys.reduce {|a,b| a + '|' + b}
+  PRONOUNS = ['i','you','he','she','we','it','you','they','to','the'].reduce {|a,b| a + '|' + b}
 
   def preprocess(string, ignore)
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
@@ -119,7 +119,7 @@ class EnglishProvider < GenericProvider
     string.gsub!(/(^|\W)(#{single_nums})(\s#{ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred' << $3}
     string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
     if bias == :ordinal
-      string.gsub!(/(^|\W)\ba\b(?=$|\W)(?! #{ALL_ORDINALS_REGEX})/i, '\1<num>' + 1.to_s)
+      string.gsub!(/(^|\W)\ba\b(?=$|\W)(?! (?:#{ALL_ORDINALS_REGEX}))/i, '\1<num>' + 1.to_s)
     else
       string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
     end
@@ -133,27 +133,23 @@ class EnglishProvider < GenericProvider
   def numerize_fractions(string, ignore, bias)
     # handle fractions
     # only plural fractions if ordinal mode
+    # Ignore quarter to be handled seperately if not fractional mode
     if bias == :ordinal
-      fractionals = regexify(ONLY_PLURAL_FRACTIONS.keys, ignore: ignore)
-    else
+      fractionals = regexify(ONLY_PLURAL_FRACTIONS.keys, ignore: ignore + ['quarter', 'quarters'])
+    elsif bias == :fractional
       fractionals = regexify(ALL_FRACTIONS.keys, ignore: ignore)
+    else
+      fractionals = regexify(ALL_FRACTIONS.keys, ignore: ignore + ['quarter', 'quarters'])
     end
+    quarters = regexify(['quarter', 'quarters'], ignore: ignore)
 
     string.gsub!(/a (#{fractionals})(?=$|\W)/i) {'<num>1/' << ALL_FRACTIONS[$1].to_s}
     # TODO : Find Noun Distinction for Quarter
     if bias == :fractional
       string.gsub!(/(^|\W)(#{fractionals})(?=$|\W)/i) {'/' << ALL_FRACTIONS[$2].to_s}
     else
-      string.gsub!(/(\w*)(?<!the)(^|\W)(#{fractionals})(?=$|\W)/i) do |match|
-        prematch = $1 
-        space = $2
-        fraction = $3
-        # HANDLES QUARTER EDGE CASES
-        if (!$3.start_with?('quarter') && space == ' ') || ($3.start_with?('quarter') && (prematch =~ /^(#{PRONOUNS})\b/) == nil)
-            match = prematch << '/' << ALL_FRACTIONS[fraction].to_s 
-        end
-        match
-      end
+      string.gsub!(/(?<!the|^)(\W)(#{fractionals})(?=$|\W)/i) { '/' << ALL_FRACTIONS[$2].to_s }
+      string.gsub!(/(?<!#{PRONOUNS})(^|\W)(#{quarters})(?=$|\W)/i) { '/' << ALL_FRACTIONS[$2].to_s }
     end
     cleanup_fractions(string)
   end
@@ -163,14 +159,7 @@ class EnglishProvider < GenericProvider
     return if bias == :fractionals
     all_ords = regexify(ALL_ORDINALS.keys, ignore: ignore) {|x| x == 'second' && bias != :ordinal }
     if bias != :ordinal && !ignore.include?('second')
-      string.gsub!(/(\w*)(?<!second)(^|\W)second(?=$|\W)/i) do |match| 
-        prematch = $1
-        space = $2
-        if (prematch =~ /^(\d|#{ALL_ORDINALS_REGEX})/i) == nil
-          match = prematch << space << '<num>' << ALL_ORDINALS['second'].to_s << 'second'[-2, 2]
-        end
-        match
-      end
+      string.gsub!(/(?<!second|\d|#{ALL_ORDINALS_REGEX})(^|\W)second(?=$|\W)/i) { $1 << '<num>' << ALL_ORDINALS['second'].to_s << 'second'[-2, 2] }
     end
     string.gsub!(/(^|\W)(#{all_ords})(?=$|\W)/i) { $1 << '<num>' << ALL_ORDINALS[$2].to_s << $2[-2, 2]}
   end
