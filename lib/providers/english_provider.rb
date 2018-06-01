@@ -143,7 +143,7 @@ class EnglishProvider < GenericProvider
         space = $2
         fraction = $3
         # HANDLES QUARTER EDGE CASES
-        if (!$3.start_with?('quarter') && space == ' ') || ($3.start_with?('quarter') && (prematch =~ /^(#{PRONOUNS})\b/) == nil) 
+        if (!$3.start_with?('quarter') && space == ' ') || ($3.start_with?('quarter') && (prematch =~ /^(#{PRONOUNS})\b/) == nil)
             match = prematch << '/' << ALL_FRACTIONS[fraction].to_s 
         end
         match
@@ -152,29 +152,21 @@ class EnglishProvider < GenericProvider
     cleanup_fractions(string)
   end
 
-  def cleanup_fractions(string)
-    # evaluate fractions when preceded by another number
-    string.gsub!(/(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)/i) { ($1.to_f + ($3.to_f/$4.to_f)).to_s }
-    # fix unpreceeded fractions
-    string.gsub!(/(?:^|\W)\/(\d+)/, '1/\1')
-    string.gsub!(/(?<=[a-zA-Z])\/(\d+)/, ' 1/\1')
-  end
 
   def numerize_ordinals(string, ignore, bias)
-    unless bias == :fractionals
-      all_ords = regexify(ALL_ORDINALS.keys, ignore: ignore) {|x| x == 'second' && bias != :ordinal }
-      if bias != :ordinal && !ignore.include?('second')
-        string.gsub!(/(\w*)(?<!second)(^|\W)second(?=$|\W)/i) do |match| 
-          prematch = $1
-          space = $2
-          if (prematch =~ /^(\d|#{ALL_ORDINALS_REGEX})/i) == nil
-            match = prematch << space << '<num>' << ALL_ORDINALS['second'].to_s << 'second'[-2, 2]
-          end
-          match
+    return if bias == :fractionals
+    all_ords = regexify(ALL_ORDINALS.keys, ignore: ignore) {|x| x == 'second' && bias != :ordinal }
+    if bias != :ordinal && !ignore.include?('second')
+      string.gsub!(/(\w*)(?<!second)(^|\W)second(?=$|\W)/i) do |match| 
+        prematch = $1
+        space = $2
+        if (prematch =~ /^(\d|#{ALL_ORDINALS_REGEX})/i) == nil
+          match = prematch << space << '<num>' << ALL_ORDINALS['second'].to_s << 'second'[-2, 2]
         end
+        match
       end
-      string.gsub!(/(^|\W)(#{all_ords})(?=$|\W)/i) { $1 << '<num>' << ALL_ORDINALS[$2].to_s << $2[-2, 2]}
     end
+    string.gsub!(/(^|\W)(#{all_ords})(?=$|\W)/i) { $1 << '<num>' << ALL_ORDINALS[$2].to_s << $2[-2, 2]}
   end
 
   # hundreds, thousands, millions, etc.
@@ -187,11 +179,27 @@ class EnglishProvider < GenericProvider
     end
   end
 
+  def postprocess(string, ignore)
+    andition(string)
+    numerize_halves(string, ignore)
+    #Strip Away Added Num Tags
+    string.gsub(/<num>/, '')
+  end
+
+  private
+
+  def cleanup_fractions(string)
+    # evaluate fractions when preceded by another number
+    string.gsub!(/(\d+)(?: | and |-)+(<num>|\s)*(\d+)\s*\/\s*(\d+)/i) { ($1.to_f + ($3.to_f/$4.to_f)).to_s }
+    # fix unpreceeded fractions
+    string.gsub!(/(?:^|\W)\/(\d+)/, '1/\1')
+    string.gsub!(/(?<=[a-zA-Z])\/(\d+)/, ' 1/\1')
+  end
+
   # always substitute halfs
   def numerize_halves(string, ignore)
-    unless ignore.include? 'half'
-      string.gsub!(/\bhalf\b/i, '1/2')
-    end
+    return if ignore.include? 'half'
+    string.gsub!(/\bhalf\b/i, '1/2')
   end
 
   def andition(string)
@@ -202,13 +210,6 @@ class EnglishProvider < GenericProvider
         sc.reset
       end
     end
-  end
-
-  def postprocess(string, ignore)
-    andition(string)
-    numerize_halves(string, ignore)
-    #Strip Away Added Num Tags
-    string.gsub(/<num>/, '')
   end
 
 end
