@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = "2.2.2"
   s.summary = "Numerizer is a gem to help with parsing numbers in natural language from strings (ex forty two)."
 
-  s.add_development_dependency 'rake', '~> 10'
+  s.add_development_dependency 'rake', '~> 13'
   s.add_development_dependency 'minitest', '~> 5.0'
 end
 
