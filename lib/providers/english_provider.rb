@@ -98,6 +98,7 @@ class EnglishProvider < GenericProvider
   ALL_FRACTIONS = ONLY_PLURAL_FRACTIONS.merge(SINGLE_ORDINAL_FRACTIONALS).merge(DIRECT_ORDINAL_FRACTIONALS)
 
   DIRECT_SINGLE_NUMS = DIRECT_NUMS.merge(SINGLE_NUMS)
+  DIRECT_NUMS_TEN_PREFIXES = DIRECT_NUMS.merge(TEN_PREFIXES)
   ORDINAL_SINGLE = ORDINALS.merge(SINGLE_ORDINAL_FRACTIONALS)
 
   # REGEXP.UNION here breaks insertion into negative Lookbehind
@@ -113,10 +114,11 @@ class EnglishProvider < GenericProvider
     single_nums = regexify(SINGLE_NUMS.keys, ignore: ignore)
     dir_single_nums = regexify(DIRECT_SINGLE_NUMS.keys, ignore: ignore)
     ten_prefs = regexify(TEN_PREFIXES.keys, ignore: ignore)
+    dir_nums_ten_prefs = regexify(DIRECT_NUMS_TEN_PREFIXES.keys, ignore: ignore)
     single_ords = regexify(ORDINAL_SINGLE.keys, ignore: ignore)
 
     # easy/direct replacements
-    string.gsub!(/(^|\W)(#{single_nums})(\s#{ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred' << $3}
+    string.gsub!(/(^|\W)(#{single_nums})\s(#{dir_nums_ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred ' << $3}
     string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
     if bias == :ordinal
       string.gsub!(/(^|\W)\ba\b(?=$|\W)(?! (?:#{ALL_ORDINALS_REGEX}))/i, '\1<num>' + 1.to_s)

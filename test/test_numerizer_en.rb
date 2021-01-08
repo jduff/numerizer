@@ -31,6 +31,7 @@ class NumerizerTestEN < TestCase
       59 => 'fifty nine',
       100 => ['one hundred', 'a hundred', 'hundred a'],
       150 => ['one hundred and fifty', 'one fifty'],
+      219 => ['two hundred and nineteen', 'two hundred nineteen', 'two nineteen'],
       200 => 'two-hundred',
       500 => '5 hundred',
       999 => 'nine hundred and ninety nine',
