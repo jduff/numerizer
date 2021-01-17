@@ -171,7 +171,7 @@ class EnglishProvider < GenericProvider
     # big_prefs = regexify(BIG_PREFIXES.keys, ignore: ignore)
     BIG_PREFIXES.each do |k,v|
       next if ignore.include? k.downcase 
-      string.gsub!(/(?:<num>)?(\d*) *#{k}/i) { $1.empty? ? v : '<num>' << (v * $1.to_i).to_s }
+      string.gsub!(/(?:<num>)?(\d*) *#{k}/i) { '<num>' << ($1.empty? ? v.to_s : (v * $1.to_i).to_s) }
       andition(string)
     end
   end
@@ -201,7 +201,7 @@ class EnglishProvider < GenericProvider
 
   def andition(string)
     sc = StringScanner.new(string)
-    while(sc.scan_until(/<num>(\d+)( | and )<num>(\d+)(?=[^\w]|$)/i))
+    while(sc.scan_until(/<num>(\d+)\s?(|and\s?)<num>(\d+)(?=[^\w]|$)/i))
       if sc[2] =~ /and/ || sc[1].size > sc[3].size
         string[(sc.pos - sc.matched_size)..(sc.pos-1)] = '<num>' << (sc[1].to_i + sc[3].to_i).to_s
         sc.reset
