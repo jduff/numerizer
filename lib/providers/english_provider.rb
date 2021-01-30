@@ -107,7 +107,7 @@ class EnglishProvider < GenericProvider
 
   def preprocess(string, ignore)
     string.gsub!(/ +|([^\d])-([^\d])/, '\1 \2') # will mutilate hyphenated-words
-    string.gsub!(/\ba$/, '') && string.rstrip! # doesn't make sense for an 'a' at the end to be a 1
+    string.gsub!(/\ban?$/, '') && string.rstrip! # doesn't make sense for an 'a' or an 'an' at the end to be a 1
   end
 
   def numerize_numerals(string, ignore, bias)
@@ -121,9 +121,9 @@ class EnglishProvider < GenericProvider
     string.gsub!(/(^|\W)(#{single_nums})\s(#{dir_nums_ten_prefs})(?=$|\W)/i) {$1 << $2 << ' hundred ' << $3}
     string.gsub!(/(^|\W)(#{dir_single_nums})(?=$|\W)/i) { $1 << '<num>' << DIRECT_SINGLE_NUMS[$2].to_s} 
     if bias == :ordinal
-      string.gsub!(/(^|\W)\ba\b(?=$|\W)(?! (?:#{ALL_ORDINALS_REGEX}))/i, '\1<num>' + 1.to_s)
+      string.gsub!(/(^|\W)\ban?\b(?=$|\W)(?! (?:#{ALL_ORDINALS_REGEX}))/i, '\1<num>' + 1.to_s)
     else
-      string.gsub!(/(^|\W)\ba\b(?=$|\W)/i, '\1<num>' + 1.to_s)
+      string.gsub!(/(^|\W)\ban?\b(?=$|\W)/i, '\1<num>' + 1.to_s)
     end
 
     # ten, twenty, etc.
@@ -145,7 +145,7 @@ class EnglishProvider < GenericProvider
     end
     quarters = regexify(['quarter', 'quarters'], ignore: ignore)
 
-    string.gsub!(/a (#{fractionals})(?=$|\W)/i) {'<num>1/' << ALL_FRACTIONS[$1].to_s}
+    string.gsub!(/an? (#{fractionals})(?=$|\W)/i) {'<num>1/' << ALL_FRACTIONS[$1].to_s}
     # TODO : Find Noun Distinction for Quarter
     if bias == :fractional
       string.gsub!(/(^|\W)(#{fractionals})(?=$|\W)/i) {'/' << ALL_FRACTIONS[$2].to_s}

@@ -71,6 +71,7 @@ class NumerizerTestEN < TestCase
     assert_equal "1/4", Numerizer.numerize("one quarter")
     assert_equal "1/4", Numerizer.numerize("a quarter")
     assert_equal "1/8", Numerizer.numerize("one eighth")
+    assert_equal "1/8", Numerizer.numerize("an eighth")
 
     assert_equal "3/4", Numerizer.numerize("three quarters")
     assert_equal "2/4", Numerizer.numerize("two fourths")
@@ -81,6 +82,7 @@ class NumerizerTestEN < TestCase
   def test_fractional_addition
     assert_equal "1.25", Numerizer.numerize("one and a quarter")
     assert_equal "2.375", Numerizer.numerize("two and three eighths")
+    assert_equal "2.125", Numerizer.numerize("two and an eighth")
     assert_equal "2.5", Numerizer.numerize("two and a half")
     assert_equal "3.5 hours", Numerizer.numerize("three and a half hours")
   end
@@ -101,7 +103,7 @@ class NumerizerTestEN < TestCase
     assert_equal '1/2', Numerizer.numerize('1/2')
     assert_equal '05/06', Numerizer.numerize('05/06')
     assert_equal "3.5 hours", Numerizer.numerize("three and a half hours")
-    assert_equal "1/2 an hour", Numerizer.numerize("half an hour")
+    assert_equal "1/2 1 hour", Numerizer.numerize("half an hour")
   end
 
   def test_ordinal_strings
