@@ -1,5 +1,5 @@
 = Numerizer
-{<img src="https://travis-ci.com/jduff/numerizer.svg?branch=master" alt="Build Status" />}[https://travis-ci.com/jduff/numerizer]
+{<img src="https://github.com/jduff/numerizer/actions/workflows/test.yaml/badge.svg?branch=master" alt="Build Status" />}[https://github.com/jduff/numerizer/actions/workflows/test.yaml?query=branch%3Amaster]
 
 Numerizer is a gem to help with parsing numbers in natural language from strings (ex forty two). It was extracted from the awesome Chronic gem https://github.com/mojombo/chronic.
 
