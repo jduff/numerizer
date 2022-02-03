@@ -12,6 +12,7 @@
 
 require 'numerizer/version'
 require 'providers/english_provider'
+require 'set'
 
 class Numerizer
 
